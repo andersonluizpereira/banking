@@ -15,13 +15,11 @@ import java.util.List;
 @Service
 public class TransferenciaService {
 
+    private static final Double LIMITE_TRANSFERENCIA = 10000.0;
     @Autowired
     private ClienteService clienteService;
-
     @Autowired
     private TransferenciaRepository transferenciaRepository;
-
-    private static final Double LIMITE_TRANSFERENCIA = 10000.0;
 
     @Transactional
     public Transferencia realizarTransferencia(TransferenciaDTO transferenciaDTO) {

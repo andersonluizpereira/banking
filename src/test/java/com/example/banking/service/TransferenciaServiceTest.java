@@ -1,18 +1,17 @@
 package com.example.banking.service;
 
 import com.example.banking.dto.TransferenciaDTO;
-import com.example.banking.exception.InsufficientFundsException;
 import com.example.banking.model.Cliente;
 import com.example.banking.model.Transferencia;
 import com.example.banking.repository.TransferenciaRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
