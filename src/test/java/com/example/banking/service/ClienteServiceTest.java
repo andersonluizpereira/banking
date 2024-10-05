@@ -5,11 +5,14 @@ import com.example.banking.exception.ResourceNotFoundException;
 import com.example.banking.model.Cliente;
 import com.example.banking.repository.ClienteRepository;
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ClienteServiceTest {
 
     @Mock
@@ -28,18 +32,33 @@ class ClienteServiceTest {
     @InjectMocks
     private com.example.banking.service.ClienteService clienteService;
 
-    @Test
-    public void testarBuscarPorNumeroConta_Sucesso() {
-        Cliente cliente = Cliente.builder()
+    private Cliente cliente;
+    private ClienteDTO clienteDTO;
+
+    @BeforeEach
+    public void setup() {
+        // Configuração comum que será executada antes de cada teste
+        cliente = Cliente.builder()
                 .id("1")
                 .nome("João")
                 .numeroConta("12345")
                 .saldo(1000.0)
                 .build();
 
+        clienteDTO = ClienteDTO.builder()
+                .nome("João Silva")
+                .numeroConta("123456")
+                .saldo(1000.0)
+                .build();
+
+        when(clienteRepository.findByNumeroConta("12345")).thenReturn(Optional.of(cliente));
+    }
+
+    @Test
+    public void testarBuscarPorNumeroConta_Sucesso() {
         when(clienteRepository.findByNumeroConta("12345")).thenReturn(Optional.of(cliente));
 
-        ClienteDTO clienteDTO = clienteService.buscarPorNumeroConta("12345");
+        var clienteDTO = clienteService.buscarPorNumeroConta("12345");
 
         assertNotNull(clienteDTO);
         assertEquals("João", clienteDTO.getNome());
@@ -56,14 +75,14 @@ class ClienteServiceTest {
     @Test
     public void testCadastrarCliente() {
         // Dados de entrada (DTO)
-        ClienteDTO clienteDTO = ClienteDTO.builder()
+        var clienteDTO = ClienteDTO.builder()
                 .nome("João Silva")
                 .numeroConta("123456")
                 .saldo(1000.0)
                 .build();
 
         // Cliente salvo esperado (entidade)
-        Cliente clienteSalvo = Cliente.builder()
+        var clienteSalvo = Cliente.builder()
                 .id("1")
                 .nome("João Silva")
                 .numeroConta("123456")
@@ -85,14 +104,14 @@ class ClienteServiceTest {
     @Test
     public void testListarClientes() {
         // Clientes simulados
-        Cliente cliente1 = Cliente.builder()
+        var clienteJoao = Cliente.builder()
                 .id("1")
                 .nome("João Silva")
                 .numeroConta("123456")
                 .saldo(1000.0)
                 .build();
 
-        Cliente cliente2 = Cliente.builder()
+        var clienteMaria = Cliente.builder()
                 .id("2")
                 .nome("Maria Oliveira")
                 .numeroConta("654321")
@@ -100,7 +119,7 @@ class ClienteServiceTest {
                 .build();
 
         // Simulando o comportamento do repositório para retornar uma lista de clientes
-        when(clienteRepository.findAll()).thenReturn(Arrays.asList(cliente1, cliente2));
+        when(clienteRepository.findAll()).thenReturn(Arrays.asList(clienteJoao, clienteMaria));
 
         // Executar o método a ser testado
         List<ClienteDTO> clientesRetornados = clienteService.listarClientes();
@@ -110,22 +129,22 @@ class ClienteServiceTest {
         assertEquals(2, clientesRetornados.size());
 
         // Verificar o primeiro cliente
-        ClienteDTO clienteDTO1 = clientesRetornados.get(0);
-        assertEquals("João Silva", clienteDTO1.getNome());
-        assertEquals("123456", clienteDTO1.getNumeroConta());
-        assertEquals(1000.0, clienteDTO1.getSaldo());
+        var clienteDTOJoao = clientesRetornados.get(0);
+        assertEquals("João Silva", clienteDTOJoao.getNome());
+        assertEquals("123456", clienteDTOJoao.getNumeroConta());
+        assertEquals(1000.0, clienteDTOJoao.getSaldo());
 
         // Verificar o segundo cliente
-        ClienteDTO clienteDTO2 = clientesRetornados.get(1);
-        assertEquals("Maria Oliveira", clienteDTO2.getNome());
-        assertEquals("654321", clienteDTO2.getNumeroConta());
-        assertEquals(2000.0, clienteDTO2.getSaldo());
+        var clienteDTOMaria = clientesRetornados.get(1);
+        assertEquals("Maria Oliveira", clienteDTOMaria.getNome());
+        assertEquals("654321", clienteDTOMaria.getNumeroConta());
+        assertEquals(2000.0, clienteDTOMaria.getSaldo());
     }
     @Test
     @Transactional
     public void testAtualizarSaldo() {
         // Cliente simulado
-        Cliente cliente = Cliente.builder()
+        var cliente = Cliente.builder()
                 .id("1")
                 .nome("João Silva")
                 .numeroConta("123456")
@@ -146,7 +165,7 @@ class ClienteServiceTest {
     @Test
     public void testGetClienteEntityByNumeroConta_Success() {
         // Cliente simulado
-        Cliente cliente = Cliente.builder()
+        var cliente = Cliente.builder()
                 .id("1")
                 .nome("João Silva")
                 .numeroConta("123456")
@@ -157,7 +176,7 @@ class ClienteServiceTest {
         when(clienteRepository.findByNumeroConta("123456")).thenReturn(Optional.of(cliente));
 
         // Executar o método a ser testado
-        Cliente clienteRetornado = clienteService.getClienteEntityByNumeroConta("123456");
+        var clienteRetornado = clienteService.getClienteEntityByNumeroConta("123456");
 
         // Verificações
         assertNotNull(clienteRetornado);

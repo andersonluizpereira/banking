@@ -18,12 +18,12 @@ public class ClienteService {
     private ClienteRepository clienteRepository;
 
     public ClienteDTO cadastrarCliente(ClienteDTO clienteDTO) {
-        Cliente cliente = Cliente.builder()
+        var cliente = Cliente.builder()
                 .nome(clienteDTO.getNome())
                 .numeroConta(clienteDTO.getNumeroConta())
                 .saldo(clienteDTO.getSaldo())
                 .build();
-        Cliente salvo = clienteRepository.save(cliente);
+        var salvo = clienteRepository.save(cliente);
         return mapToDTO(salvo);
     }
 
@@ -35,7 +35,7 @@ public class ClienteService {
     }
 
     public ClienteDTO buscarPorNumeroConta(String numeroConta) {
-        Cliente cliente = clienteRepository.findByNumeroConta(numeroConta)
+        var cliente = clienteRepository.findByNumeroConta(numeroConta)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado para a conta: " + numeroConta));
         return mapToDTO(cliente);
     }
