@@ -23,23 +23,17 @@ public class TransferenciaService {
 
     @Transactional
     public Transferencia realizarTransferencia(TransferenciaDTO transferenciaDTO) {
-        Transferencia transferencia = Transferencia.builder()
-                .contaOrigem(transferenciaDTO.getContaOrigem())
-                .contaDestino(transferenciaDTO.getContaDestino())
-                .valor(transferenciaDTO.getValor())
-                .dataTransferencia(LocalDateTime.now())
-                .sucesso(false)
-                .build();
+        var transferencia = getTransferencia(transferenciaDTO);
 
         try {
-            if (transferenciaDTO.getValor() > LIMITE_TRANSFERENCIA) {
+            if (isaVerificarLimiteTransferencia(transferenciaDTO)) {
                 throw new IllegalArgumentException("Valor da transferência excede o limite de R$ 10.000,00");
             }
 
-            Cliente origem = clienteService.getClienteEntityByNumeroConta(transferenciaDTO.getContaOrigem());
-            Cliente destino = clienteService.getClienteEntityByNumeroConta(transferenciaDTO.getContaDestino());
+            var origem = clienteService.getClienteEntityByNumeroConta(transferenciaDTO.getContaOrigem());
+            var destino = clienteService.getClienteEntityByNumeroConta(transferenciaDTO.getContaDestino());
 
-            if (origem.getSaldo() < transferenciaDTO.getValor()) {
+            if (isVerificarSaldo(transferenciaDTO, origem)) {
                 throw new InsufficientFundsException("Saldo insuficiente para a transferência");
             }
 
@@ -59,6 +53,24 @@ public class TransferenciaService {
         }
 
         return transferencia;
+    }
+
+    private static Transferencia getTransferencia(TransferenciaDTO transferenciaDTO) {
+        return Transferencia.builder()
+                .contaOrigem(transferenciaDTO.getContaOrigem())
+                .contaDestino(transferenciaDTO.getContaDestino())
+                .valor(transferenciaDTO.getValor())
+                .dataTransferencia(LocalDateTime.now())
+                .sucesso(false)
+                .build();
+    }
+
+    private static boolean isVerificarSaldo(TransferenciaDTO transferenciaDTO, Cliente origem) {
+        return origem.getSaldo() < transferenciaDTO.getValor();
+    }
+
+    private static boolean isaVerificarLimiteTransferencia(TransferenciaDTO transferenciaDTO) {
+        return transferenciaDTO.getValor() > LIMITE_TRANSFERENCIA;
     }
 
     public List<Transferencia> buscarHistoricoTransferencias(String numeroConta) {

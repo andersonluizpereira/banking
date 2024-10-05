@@ -152,11 +152,11 @@ class TransferenciaServiceTest {
 
         // Executar e verificar se a exceção IllegalArgumentException é lançada
 
-        var transf =  transferenciaService.realizarTransferencia(transferenciaDTO);
+        var transferencia =  transferenciaService.realizarTransferencia(transferenciaDTO);
 
         // Verificar se a mensagem da exceção é a esperada
         String expectedMessage = "Valor da transferência excede o limite de R$ 10.000,00";
-        String actualMessage = transf.getMensagem();
+        String actualMessage = transferencia.getMensagem();
 
         assert(actualMessage.contains(expectedMessage));
     }
