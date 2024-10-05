@@ -10,6 +10,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -87,5 +92,53 @@ class TransferenciaServiceTest {
         transferenciaDTO.setValor(15000.0);  // Exceeds the transfer limit
 
         verify(transferenciaRepository, never()).save(any(Transferencia.class));
+    }
+    @Test
+    public void testBuscarHistoricoTransferencias() {
+        // Transferências simuladas
+        Transferencia transferencia1 = Transferencia.builder()
+                .id(1L)
+                .contaOrigem("123456")
+                .contaDestino("654321")
+                .valor(500.0)
+                .dataTransferencia(LocalDateTime.now().minusDays(1))
+                .sucesso(true)
+                .mensagem("Transferência concluída")
+                .build();
+
+        Transferencia transferencia2 = Transferencia.builder()
+                .id(2L)
+                .contaOrigem("654321")
+                .contaDestino("123456")
+                .valor(300.0)
+                .dataTransferencia(LocalDateTime.now().minusDays(2))
+                .sucesso(true)
+                .mensagem("Transferência concluída")
+                .build();
+
+        // Simulando o comportamento do repositório para retornar uma lista de transferências
+        when(transferenciaRepository.findByContaOrigemOrContaDestinoOrderByDataTransferenciaDesc("123456", "123456"))
+                .thenReturn(Arrays.asList(transferencia1, transferencia2));
+
+        // Executar o método a ser testado
+        List<Transferencia> historicoTransferencias = transferenciaService.buscarHistoricoTransferencias("123456");
+
+        // Verificações
+        assertNotNull(historicoTransferencias);
+        assertEquals(2, historicoTransferencias.size());
+
+        // Verificar a primeira transferência (deve ser a mais recente)
+        Transferencia primeiraTransferencia = historicoTransferencias.get(0);
+        assertEquals(1L, primeiraTransferencia.getId());
+        assertEquals("123456", primeiraTransferencia.getContaOrigem());
+        assertEquals("654321", primeiraTransferencia.getContaDestino());
+        assertEquals(500.0, primeiraTransferencia.getValor());
+
+        // Verificar a segunda transferência
+        Transferencia segundaTransferencia = historicoTransferencias.get(1);
+        assertEquals(2L, segundaTransferencia.getId());
+        assertEquals("654321", segundaTransferencia.getContaOrigem());
+        assertEquals("123456", segundaTransferencia.getContaDestino());
+        assertEquals(300.0, segundaTransferencia.getValor());
     }
 }
