@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  banking-app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # Configurações do Spring Boot (opcional, já definidas no application.properties)
+      SPRING_DATASOURCE_URL: jdbc:h2:mem:bankingdb
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD:
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    restart: unless-stopped
