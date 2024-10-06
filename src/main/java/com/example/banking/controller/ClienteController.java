@@ -12,10 +12,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.example.banking.utils.ApiPaths.API_V_1_CLIENTES;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping("/api/v1/clientes")
+@RequestMapping(API_V_1_CLIENTES)
 @Tag(name = "Clientes", description = "Operações relacionadas a clientes")
 public class ClienteController {
 
