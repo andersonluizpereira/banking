@@ -18,11 +18,11 @@ import java.util.UUID;
 
 import static com.example.banking.utils.ApiPaths.API_V_1_CLIENTES;
 import static com.example.banking.utils.ApiPaths.API_V_1_CLIENTES_COM_NUMERO_CONTA;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.hamcrest.Matchers.is;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

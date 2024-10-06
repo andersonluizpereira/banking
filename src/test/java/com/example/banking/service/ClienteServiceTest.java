@@ -17,6 +17,7 @@ import org.mockito.quality.Strictness;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,33 +36,23 @@ class ClienteServiceTest {
     private Cliente cliente;
     private ClienteDTO clienteDTO;
 
-    @BeforeEach
-    public void setup() {
-        // Configuração comum que será executada antes de cada teste
-        cliente = Cliente.builder()
-                .id("1")
-                .nome("João")
-                .numeroConta("12345")
-                .saldo(1000.0)
-                .build();
+    private static String ORIGEM_ID;
 
-        clienteDTO = ClienteDTO.builder()
-                .nome("João Silva")
-                .numeroConta("123456")
-                .saldo(1000.0)
+    private static Cliente getClienteSalvoBuilder(String id, String nome, String numeroConta, Double saldo) {
+        return Cliente.builder()
+                .id(id)
+                .nome(nome)
+                .numeroConta(numeroConta)
+                .saldo(saldo)
                 .build();
-
-        when(clienteRepository.findByNumeroConta("12345")).thenReturn(Optional.of(cliente));
     }
 
-    @Test
-    public void testarBuscarPorNumeroConta_Sucesso() {
-        when(clienteRepository.findByNumeroConta("12345")).thenReturn(Optional.of(cliente));
-
-        var clienteDTO = clienteService.buscarPorNumeroConta("12345");
-
-        assertNotNull(clienteDTO);
-        assertEquals("João", clienteDTO.getNome());
+    private static ClienteDTO getClientDTOBuilder() {
+        return ClienteDTO.builder()
+                .nome("João Silva")
+                .numeroConta(ORIGEM_ID)
+                .saldo(1000.0)
+                .build();
     }
 
     @Test
@@ -72,130 +63,116 @@ class ClienteServiceTest {
             clienteService.buscarPorNumeroConta("99999");
         });
     }
+
+    @BeforeEach
+    public void setup() {
+        ORIGEM_ID = String.valueOf(UUID.randomUUID());
+
+        cliente = Cliente.builder()
+                .id("1")
+                .nome("João")
+                .numeroConta(ORIGEM_ID)
+                .saldo(1000.0)
+                .build();
+
+        clienteDTO = getClientDTOBuilder();
+
+        when(clienteRepository.findByNumeroConta(ORIGEM_ID)).thenReturn(Optional.of(cliente));
+    }
+
+    @Test
+    public void testarBuscarPorNumeroConta_Sucesso() {
+        when(clienteRepository.findByNumeroConta(ORIGEM_ID)).thenReturn(Optional.of(cliente));
+
+        var clienteDTO = clienteService.buscarPorNumeroConta(ORIGEM_ID);
+
+        assertNotNull(clienteDTO);
+        assertEquals("João", clienteDTO.getNome());
+    }
+
     @Test
     public void testCadastrarCliente() {
-        // Dados de entrada (DTO)
-        var clienteDTO = ClienteDTO.builder()
-                .nome("João Silva")
-                .numeroConta("123456")
-                .saldo(1000.0)
-                .build();
+        var clienteDTO = getClientDTOBuilder();
 
-        // Cliente salvo esperado (entidade)
-        var clienteSalvo = Cliente.builder()
-                .id("1")
-                .nome("João Silva")
-                .numeroConta("123456")
-                .saldo(1000.0)
-                .build();
+        var clienteSalvo = getClienteSalvoBuilder("1", "João Silva", ORIGEM_ID, 1000.0);
 
-        // Simulando o comportamento do repositório para retornar o cliente salvo
         when(clienteRepository.save(any(Cliente.class))).thenReturn(clienteSalvo);
 
-        // Executar o método a ser testado
         ClienteDTO clienteRetornado = clienteService.cadastrarCliente(clienteDTO);
 
-        // Verificações
         assertNotNull(clienteRetornado);
         assertEquals("João Silva", clienteRetornado.getNome());
-        assertEquals("123456", clienteRetornado.getNumeroConta());
+        assertEquals(ORIGEM_ID, clienteRetornado.getNumeroConta());
         assertEquals(1000.0, clienteRetornado.getSaldo());
     }
+
     @Test
     public void testListarClientes() {
-        // Clientes simulados
-        var clienteJoao = Cliente.builder()
-                .id("1")
-                .nome("João Silva")
-                .numeroConta("123456")
-                .saldo(1000.0)
-                .build();
 
-        var clienteMaria = Cliente.builder()
-                .id("2")
-                .nome("Maria Oliveira")
-                .numeroConta("654321")
-                .saldo(2000.0)
-                .build();
+        var clienteJoao = getClienteSalvoBuilder("1", "João Silva", ORIGEM_ID, 1000.0);
 
-        // Simulando o comportamento do repositório para retornar uma lista de clientes
+        var clienteMaria = getClienteSalvoBuilder("2", "Maria Oliveira", "654321", 2000.0);
+
         when(clienteRepository.findAll()).thenReturn(Arrays.asList(clienteJoao, clienteMaria));
 
-        // Executar o método a ser testado
         List<ClienteDTO> clientesRetornados = clienteService.listarClientes();
 
-        // Verificações
         assertNotNull(clientesRetornados);
         assertEquals(2, clientesRetornados.size());
 
-        // Verificar o primeiro cliente
         var clienteDTOJoao = clientesRetornados.get(0);
         assertEquals("João Silva", clienteDTOJoao.getNome());
-        assertEquals("123456", clienteDTOJoao.getNumeroConta());
+        assertEquals(ORIGEM_ID, clienteDTOJoao.getNumeroConta());
         assertEquals(1000.0, clienteDTOJoao.getSaldo());
 
-        // Verificar o segundo cliente
         var clienteDTOMaria = clientesRetornados.get(1);
         assertEquals("Maria Oliveira", clienteDTOMaria.getNome());
         assertEquals("654321", clienteDTOMaria.getNumeroConta());
         assertEquals(2000.0, clienteDTOMaria.getSaldo());
     }
+
     @Test
     @Transactional
     public void testAtualizarSaldo() {
-        // Cliente simulado
+
         var cliente = Cliente.builder()
                 .id("1")
                 .nome("João Silva")
-                .numeroConta("123456")
+                .numeroConta(ORIGEM_ID)
                 .saldo(2000.0)
                 .build();
 
-        // Simulando o comportamento do repositório
         when(clienteRepository.save(any(Cliente.class))).thenReturn(cliente);
 
-        // Executar o método a ser testado
         cliente.setSaldo(3000.0); // Atualizar o saldo
         clienteService.atualizarSaldo(cliente);
 
-        // Verificar se o método save foi chamado uma vez com o cliente correto
         verify(clienteRepository, times(1)).save(cliente);
-
     }
+
     @Test
     public void testGetClienteEntityByNumeroConta_Success() {
-        // Cliente simulado
-        var cliente = Cliente.builder()
-                .id("1")
-                .nome("João Silva")
-                .numeroConta("123456")
-                .saldo(1000.0)
-                .build();
 
-        // Simulando o comportamento do repositório para encontrar o cliente
-        when(clienteRepository.findByNumeroConta("123456")).thenReturn(Optional.of(cliente));
+        var cliente = getClienteSalvoBuilder("1", "João Silva", ORIGEM_ID, 1000.0);
 
-        // Executar o método a ser testado
-        var clienteRetornado = clienteService.getClienteEntityByNumeroConta("123456");
+        when(clienteRepository.findByNumeroConta(ORIGEM_ID)).thenReturn(Optional.of(cliente));
 
-        // Verificações
+        var clienteRetornado = clienteService.getClienteEntityByNumeroConta(ORIGEM_ID);
+
         assertNotNull(clienteRetornado);
         assertEquals("João Silva", clienteRetornado.getNome());
-        assertEquals("123456", clienteRetornado.getNumeroConta());
+        assertEquals(ORIGEM_ID, clienteRetornado.getNumeroConta());
         assertEquals(1000.0, clienteRetornado.getSaldo());
     }
 
     @Test
     public void testGetClienteEntityByNumeroConta_NotFound() {
-        // Simulando o comportamento do repositório para não encontrar o cliente
         when(clienteRepository.findByNumeroConta("999999")).thenReturn(Optional.empty());
 
-        // Executar e verificar a exceção
         Exception exception = assertThrows(ResourceNotFoundException.class, () -> {
             clienteService.getClienteEntityByNumeroConta("999999");
         });
 
-        // Verificar a mensagem da exceção
         String expectedMessage = "Cliente não encontrado para a conta: 999999";
         String actualMessage = exception.getMessage();
 

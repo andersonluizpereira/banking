@@ -1,10 +1,11 @@
 package com.example.banking.controller;
+
 import com.example.banking.dto.ClienteDTO;
+import com.example.banking.dto.TransferenciaDTO;
 import com.example.banking.model.Cliente;
 import com.example.banking.repository.ClienteRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.example.banking.dto.TransferenciaDTO;
 import com.example.banking.repository.TransferenciaRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +13,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
-import static com.example.banking.utils.ApiPaths.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.UUID;
 
+import static com.example.banking.utils.ApiPaths.API_V_1_TRANSFERENCIAS;
+import static com.example.banking.utils.ApiPaths.API_V_1_TRANSFERENCIAS_COM_NUMERO_CONTA;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,6 +45,7 @@ class TransferenciaControllerTest {
     private ClienteDTO clienteDTO;
     private String ORIGEM_ID;
     private String DESTINO_ID;
+
     @BeforeEach
     public void setUp() {
         ORIGEM_ID = String.valueOf(UUID.randomUUID());
@@ -98,6 +100,7 @@ class TransferenciaControllerTest {
                 .andExpect(jsonPath("$.valor", is(5000.0)))
                 .andExpect(jsonPath("$.sucesso", is(true)));
     }
+
     @Test
     public void testRealizarTransferencia_FalhaSaldoInsuficiente() throws Exception {
         var cliente2 = getClienteBuilder("Pedro", DESTINO_ID, 2500.0);
@@ -126,9 +129,12 @@ class TransferenciaControllerTest {
                         .content(objectMapper.writeValueAsString(transferenciaDTO)))
                 .andExpect(status().isCreated());
 
-        var url = String.format(API_V_1_CLIENTES_COM_NUMERO_CONTA, ORIGEM_ID);
+        var url = String.format(API_V_1_TRANSFERENCIAS_COM_NUMERO_CONTA, ORIGEM_ID);
         mockMvc.perform(get(url)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].contaOrigem", is(ORIGEM_ID)))
+                .andExpect(jsonPath("$[0].contaDestino", is(DESTINO_ID)))
+                .andExpect(jsonPath("$[0].valor", is(5000.0)));
     }
 }

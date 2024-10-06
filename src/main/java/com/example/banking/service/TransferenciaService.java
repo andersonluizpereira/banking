@@ -21,6 +21,24 @@ public class TransferenciaService {
     @Autowired
     private TransferenciaRepository transferenciaRepository;
 
+    private static Transferencia getTransferencia(TransferenciaDTO transferenciaDTO) {
+        return Transferencia.builder()
+                .contaOrigem(transferenciaDTO.getContaOrigem())
+                .contaDestino(transferenciaDTO.getContaDestino())
+                .valor(transferenciaDTO.getValor())
+                .dataTransferencia(LocalDateTime.now())
+                .sucesso(false)
+                .build();
+    }
+
+    private static boolean isVerificarSaldo(TransferenciaDTO transferenciaDTO, Cliente origem) {
+        return origem.getSaldo() < transferenciaDTO.getValor();
+    }
+
+    private static boolean isaVerificarLimiteTransferencia(TransferenciaDTO transferenciaDTO) {
+        return transferenciaDTO.getValor() > LIMITE_TRANSFERENCIA;
+    }
+
     @Transactional
     public Transferencia realizarTransferencia(TransferenciaDTO transferenciaDTO) {
         var transferencia = getTransferencia(transferenciaDTO);
@@ -53,24 +71,6 @@ public class TransferenciaService {
         }
 
         return transferencia;
-    }
-
-    private static Transferencia getTransferencia(TransferenciaDTO transferenciaDTO) {
-        return Transferencia.builder()
-                .contaOrigem(transferenciaDTO.getContaOrigem())
-                .contaDestino(transferenciaDTO.getContaDestino())
-                .valor(transferenciaDTO.getValor())
-                .dataTransferencia(LocalDateTime.now())
-                .sucesso(false)
-                .build();
-    }
-
-    private static boolean isVerificarSaldo(TransferenciaDTO transferenciaDTO, Cliente origem) {
-        return origem.getSaldo() < transferenciaDTO.getValor();
-    }
-
-    private static boolean isaVerificarLimiteTransferencia(TransferenciaDTO transferenciaDTO) {
-        return transferenciaDTO.getValor() > LIMITE_TRANSFERENCIA;
     }
 
     public List<Transferencia> buscarHistoricoTransferencias(String numeroConta) {
