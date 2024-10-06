@@ -85,7 +85,6 @@ class TransferenciaControllerTest {
         var cliente2 = getClienteBuilder("Pedro", DESTINO_ID, 2500.0);
 
         salvarClienteNoRepositorio(clienteDTO);
-
         salvarClienteNoRepositorio(cliente2);
 
         mockMvc.perform(post(API_V_1_TRANSFERENCIAS)
@@ -96,5 +95,20 @@ class TransferenciaControllerTest {
                 .andExpect(jsonPath("$.contaDestino", is(DESTINO_ID)))
                 .andExpect(jsonPath("$.valor", is(5000.0)))
                 .andExpect(jsonPath("$.sucesso", is(true)));
+    }
+    @Test
+    public void testRealizarTransferencia_FalhaSaldoInsuficiente() throws Exception {
+        var cliente2 = getClienteBuilder("Pedro", DESTINO_ID, 2500.0);
+
+        salvarClienteNoRepositorio(clienteDTO);
+        salvarClienteNoRepositorio(cliente2);
+
+        transferenciaDTO.setValor(15000.0);
+
+        mockMvc.perform(post(API_V_1_TRANSFERENCIAS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(transferenciaDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.sucesso", is(false)));
     }
 }
