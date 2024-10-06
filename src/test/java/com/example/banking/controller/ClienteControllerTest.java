@@ -39,7 +39,6 @@ class ClienteControllerTest {
     private ObjectMapper objectMapper;
 
     private ClienteDTO clienteDTO;
-
     private String ID;
 
     @BeforeEach

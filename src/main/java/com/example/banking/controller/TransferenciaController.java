@@ -13,10 +13,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.example.banking.utils.ApiPaths.API_V_1_TRANSFERENCIAS;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping("/api/v1/transferencias")
+@RequestMapping(API_V_1_TRANSFERENCIAS)
 @Tag(name = "Transferências", description = "Operações relacionadas a transferências")
 public class TransferenciaController {
 
