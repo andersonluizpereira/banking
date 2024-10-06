@@ -30,3 +30,12 @@ API RESTful para gerenciamento de clientes e transferências bancárias.
    ```
 2. **Documentação do Projeto**
   Entre no navegador -> http://localhost:8080/swagger-ui/index.html#/
+
+3. **Instalando as dependencias**
+  ```bash
+  mvn clean install
+   ```
+4. **Rodando os testes**
+  ```bash
+  mvn test
+   ```
