@@ -36,7 +36,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Install dependencies with Maven
-        run: mvn --batch-mode install -DskipTests
+        run: mvn clean install -DskipTests
 
       - name: Run tests
         run: mvn test
