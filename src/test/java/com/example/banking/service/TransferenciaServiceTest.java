@@ -147,7 +147,7 @@ class TransferenciaServiceTest {
         TransferenciaDTO transferenciaDTO = TransferenciaDTO.builder()
                 .contaOrigem(ORIGEM_ID)
                 .contaDestino(DESTINO_ID)
-                .valor(15000.0) // Valor acima do limite de R$ 10.000,00
+                .valor(15000.0)
                 .build();
 
 

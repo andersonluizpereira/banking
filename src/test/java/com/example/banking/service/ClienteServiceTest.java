@@ -145,7 +145,7 @@ class ClienteServiceTest {
 
         when(clienteRepository.save(any(Cliente.class))).thenReturn(cliente);
 
-        cliente.setSaldo(3000.0); // Atualizar o saldo
+        cliente.setSaldo(3000.0);
         clienteService.atualizarSaldo(cliente);
 
         verify(clienteRepository, times(1)).save(cliente);

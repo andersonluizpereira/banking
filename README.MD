@@ -14,6 +14,7 @@ API RESTful para gerenciamento de clientes e transferências bancárias.
 - Lombok
 - Springdoc OpenAPI
 - JUnit & Mockito
+- GitHub Action Hook de testes
 
 ## Requisitos
 
@@ -38,4 +39,8 @@ API RESTful para gerenciamento de clientes e transferências bancárias.
 4. **Rodando os testes**
   ```bash
   mvn test
+   ```
+5. **Rodando o projeto**
+  ```bash
+  mvn spring-boot:run
    ```
