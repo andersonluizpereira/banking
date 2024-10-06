@@ -12,12 +12,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import static com.example.banking.utils.ApiPaths.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.UUID;
 
-import static com.example.banking.utils.ApiPaths.API_V_1_TRANSFERENCIAS;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -110,5 +112,23 @@ class TransferenciaControllerTest {
                         .content(objectMapper.writeValueAsString(transferenciaDTO)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.sucesso", is(false)));
+    }
+
+    @Test
+    public void testBuscarHistoricoTransferencias_Sucesso() throws Exception {
+        var cliente2 = getClienteBuilder("Pedro", DESTINO_ID, 2500.0);
+
+        salvarClienteNoRepositorio(clienteDTO);
+        salvarClienteNoRepositorio(cliente2);
+
+        mockMvc.perform(post(API_V_1_TRANSFERENCIAS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(transferenciaDTO)))
+                .andExpect(status().isCreated());
+
+        var url = String.format(API_V_1_CLIENTES_COM_NUMERO_CONTA, ORIGEM_ID);
+        mockMvc.perform(get(url)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 }
