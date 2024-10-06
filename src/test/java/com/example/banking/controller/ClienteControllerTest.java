@@ -16,10 +16,13 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.UUID;
 
+import static com.example.banking.utils.ApiPaths.API_V_1_CLIENTES;
+import static com.example.banking.utils.ApiPaths.API_V_1_CLIENTES_COM_NUMERO_CONTA;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.is;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -42,11 +45,7 @@ class ClienteControllerTest {
     @BeforeEach
     public void setUp() {
         ID = String.valueOf(UUID.randomUUID());
-        clienteDTO = ClienteDTO.builder()
-                .nome("Maria")
-                .numeroConta(ID)
-                .saldo(2000.0)
-                .build();
+        clienteDTO = getClienteBuilder("Maria", ID, 2000.0);
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
         clienteRepository.deleteAll();
     }
@@ -54,7 +53,7 @@ class ClienteControllerTest {
     @Test
     public void testarCadastrarCliente() throws Exception {
 
-        mockMvc.perform(post("/api/v1/clientes")
+        mockMvc.perform(post(API_V_1_CLIENTES)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(clienteDTO)))
                 .andExpect(status().isCreated())
@@ -64,34 +63,57 @@ class ClienteControllerTest {
 
     @Test
     public void testarListarClientes() throws Exception {
-        var cliente1 = ClienteDTO.builder()
-                .nome("Ana")
-                .numeroConta(ID)
-                .saldo(1500.0)
-                .build();
+        var cliente1 = getClienteBuilder("Ana", ID, 1500.0);
 
-        var cliente2 = ClienteDTO.builder()
-                .nome("Pedro")
-                .numeroConta(String.valueOf(UUID.randomUUID()))
-                .saldo(2500.0)
-                .build();
+        var cliente2 = getClienteBuilder("Pedro", String.valueOf(UUID.randomUUID()), 2500.0);
 
-        clienteRepository.save(Cliente.builder()
-                .id(UUID.randomUUID().toString())
-                .nome(cliente1.getNome())
-                .numeroConta(cliente1.getNumeroConta())
-                .saldo(cliente1.getSaldo())
-                .build());
+        salvarClienteNoRepositorio(cliente1);
 
-        clienteRepository.save(Cliente.builder()
-                .id(UUID.randomUUID().toString())
-                .nome(cliente2.getNome())
-                .numeroConta(cliente2.getNumeroConta())
-                .saldo(cliente2.getSaldo())
-                .build());
+        salvarClienteNoRepositorio(cliente2);
 
-        mockMvc.perform(get("/api/v1/clientes"))
+        mockMvc.perform(get(API_V_1_CLIENTES))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
+    }
+
+    private void salvarClienteNoRepositorio(ClienteDTO cliente) {
+        clienteRepository.save(Cliente.builder()
+                .id(UUID.randomUUID().toString())
+                .nome(cliente.getNome())
+                .numeroConta(cliente.getNumeroConta())
+                .saldo(cliente.getSaldo())
+                .build());
+    }
+
+    private ClienteDTO getClienteBuilder(String nome, String ID, double saldo) {
+        return ClienteDTO.builder()
+                .nome(nome)
+                .numeroConta(ID)
+                .saldo(saldo)
+                .build();
+    }
+
+    @Test
+    public void testBuscarPorNumeroConta_Sucesso() throws Exception {
+        mockMvc.perform(post(API_V_1_CLIENTES)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(clienteDTO)))
+                .andExpect(status().isCreated());
+        var url = String.format(API_V_1_CLIENTES_COM_NUMERO_CONTA, ID);
+        mockMvc.perform(get(url)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nome", is("Maria")))
+                .andExpect(jsonPath("$.numeroConta", is(ID)))
+                .andExpect(jsonPath("$.saldo", is(2000.0)));
+    }
+
+    @Test
+    public void testBuscarPorNumeroConta_NaoEncontrado() throws Exception {
+        var url = String.format(API_V_1_CLIENTES_COM_NUMERO_CONTA, "99999");
+        mockMvc.perform(get(url)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", is("Cliente não encontrado para a conta: 99999")));
     }
 }
