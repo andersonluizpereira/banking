@@ -46,10 +46,13 @@ API RESTful para gerenciamento de clientes e transferências bancárias.
    ```
 
 6. **Tarefa**
-
 ### Desenvolva um projeto que exponha APIs no padrão RESTful e atenda às seguintes funcionalidades:
 #### ✅ Cadastro de Clientes - o Um endpoint para cadastrar um cliente com as seguintes informações: ID (único), nome, número da conta (único) e saldo em conta.
 #### ✅ Listagem de Clientes - o Um endpoint para listar todos os clientes cadastrados.
 #### ✅ Busca de Cliente por Número da Conta - o Um endpoint para buscar um cliente pelo número da conta.
 #### ✅ Transferência entre Contas - o Um endpoint para realizar transferências entre duas contas. A conta de origem precisa ter saldo suficiente para a realização da transferência, e o valor da transferência deve ser de no máximo R$ 10.000,00.
 #### ✅ Histórico de Transferências - o endpoint para buscar as transferências relacionadas a uma conta, ordenadas por data decrescente. Lembre-se de que transferências sem sucesso também devem ser armazenadas.
+
+7. **Como fazer os testes**
+8. **Rode o projeto conforme indicado na etapa cinco, não rolou, clique com botão direito no arquivo BankingApplication, dentro da pasta src/java e vai em run.**
+9. **Importe no insomnia o arquivo que está na raiz do projeto (Insomnia_bancking_2024-10-06.json), e vá do item 1 até o 6.**
