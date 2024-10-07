@@ -46,6 +46,20 @@ class TransferenciaServiceTest {
                 .build();
     }
 
+    private static Transferencia getTransferenciaConcluidaBuilder(long id, String contaOrigem, String contaDestino,
+                                                                  Double valor, LocalDateTime dataTransferencia,
+                                                                  Boolean isSucesso, String mensagem) {
+        return Transferencia.builder()
+                .id(id)
+                .contaOrigem(contaOrigem)
+                .contaDestino(contaDestino)
+                .valor(valor)
+                .dataTransferencia(dataTransferencia)
+                .sucesso(isSucesso)
+                .mensagem(mensagem)
+                .build();
+    }
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -109,25 +123,32 @@ class TransferenciaServiceTest {
 
     @Test
     public void testBuscarHistoricoTransferencias() {
-        Transferencia transferencia1 = getTransferenciaConcluidaBuilder();
 
-        Transferencia transferencia2 = Transferencia.builder()
-                .id(2L)
-                .contaOrigem(DESTINO_ID)
-                .contaDestino(ORIGEM_ID)
-                .valor(300.0)
-                .dataTransferencia(LocalDateTime.now().minusDays(2))
-                .sucesso(true)
-                .mensagem("Transferência concluída")
-                .build();
+        var transferencia1 = getTransferenciaConcluidaBuilder(1L,ORIGEM_ID,DESTINO_ID,
+                500.0,
+                LocalDateTime.now().minusDays(1),
+                true,
+                "Transferência concluída");
+
+        var transferencia2 = getTransferenciaConcluidaBuilder(2L, DESTINO_ID,ORIGEM_ID,
+                300.0,
+                LocalDateTime.now().minusDays(2),
+                true,
+                "Transferência concluída");
+
+        var transferencia3 = getTransferenciaConcluidaBuilder(3L, DESTINO_ID,ORIGEM_ID,
+                300.0,
+                LocalDateTime.now().minusDays(3),
+                false,
+                "Transferência não concluída");
 
         when(transferenciaRepository.findByContaOrigemOrContaDestinoOrderByDataTransferenciaDesc(ORIGEM_ID, ORIGEM_ID))
-                .thenReturn(Arrays.asList(transferencia1, transferencia2));
+                .thenReturn(Arrays.asList(transferencia1, transferencia2, transferencia3));
 
-        List<Transferencia> historicoTransferencias = transferenciaService.buscarHistoricoTransferencias(ORIGEM_ID);
+        var historicoTransferencias = transferenciaService.buscarHistoricoTransferencias(ORIGEM_ID);
 
         assertNotNull(historicoTransferencias);
-        assertEquals(2, historicoTransferencias.size());
+        assertEquals(3, historicoTransferencias.size());
 
         Transferencia primeiraTransferencia = historicoTransferencias.get(0);
         assertEquals(1L, primeiraTransferencia.getId());
@@ -135,16 +156,23 @@ class TransferenciaServiceTest {
         assertEquals(DESTINO_ID, primeiraTransferencia.getContaDestino());
         assertEquals(500.0, primeiraTransferencia.getValor());
 
-        Transferencia segundaTransferencia = historicoTransferencias.get(1);
+        var segundaTransferencia = historicoTransferencias.get(1);
         assertEquals(2L, segundaTransferencia.getId());
         assertEquals(DESTINO_ID, segundaTransferencia.getContaOrigem());
         assertEquals(ORIGEM_ID, segundaTransferencia.getContaDestino());
         assertEquals(300.0, segundaTransferencia.getValor());
+
+        var terceiraTransferencia3 = historicoTransferencias.get(2);
+        assertEquals(3L, terceiraTransferencia3.getId());
+        assertEquals(DESTINO_ID, terceiraTransferencia3.getContaOrigem());
+        assertEquals(ORIGEM_ID, terceiraTransferencia3.getContaDestino());
+        assertEquals(300.0, terceiraTransferencia3.getValor());
+
     }
 
     @Test
     public void testTransferenciaValorExcedeLimite() {
-        TransferenciaDTO transferenciaDTO = TransferenciaDTO.builder()
+        var transferenciaDTO = TransferenciaDTO.builder()
                 .contaOrigem(ORIGEM_ID)
                 .contaDestino(DESTINO_ID)
                 .valor(15000.0)
@@ -153,15 +181,15 @@ class TransferenciaServiceTest {
 
         var transferencia = transferenciaService.realizarTransferencia(transferenciaDTO);
 
-        String expectedMessage = "Valor da transferência excede o limite de R$ 10.000,00";
-        String actualMessage = transferencia.getMensagem();
+        var expectedMessage = "Valor da transferência excede o limite de R$ 10.000,00";
+        var actualMessage = transferencia.getMensagem();
 
         assert (actualMessage.contains(expectedMessage));
     }
 
     @Test
-    public void testBuscarHistoricoListaTransferencias() {
-        Transferencia transferencia1 = Transferencia.builder()
+    public void testBuscarHistoricoListaTransferenciasDoisItens() {
+        var transferencia1 = Transferencia.builder()
                 .id(1L)
                 .contaOrigem(ORIGEM_ID)
                 .contaDestino(DESTINO_ID)
@@ -171,7 +199,7 @@ class TransferenciaServiceTest {
                 .mensagem("Transferência realizada com sucesso")
                 .build();
 
-        Transferencia transferencia2 = Transferencia.builder()
+        var transferencia2 = Transferencia.builder()
                 .id(2L)
                 .contaOrigem(DESTINO_ID)
                 .contaDestino(ORIGEM_ID)
@@ -183,17 +211,17 @@ class TransferenciaServiceTest {
 
         when(transferenciaRepository.findByContaOrigemOrContaDestinoOrderByDataTransferenciaDesc(ORIGEM_ID, ORIGEM_ID))
                 .thenReturn(Arrays.asList(transferencia1, transferencia2));
-        List<Transferencia> historicoTransferencias = transferenciaService.buscarHistoricoTransferencias(ORIGEM_ID);
+        var historicoTransferencias = transferenciaService.buscarHistoricoTransferencias(ORIGEM_ID);
 
         assertNotNull(historicoTransferencias);
         assertEquals(2, historicoTransferencias.size());
 
-        Transferencia primeiraTransferencia = historicoTransferencias.get(0);
+        var primeiraTransferencia = historicoTransferencias.get(0);
         assertEquals(1L, primeiraTransferencia.getId());
         assertEquals(ORIGEM_ID, primeiraTransferencia.getContaOrigem());
         assertEquals(DESTINO_ID, primeiraTransferencia.getContaDestino());
 
-        Transferencia segundaTransferencia = historicoTransferencias.get(1);
+        var segundaTransferencia = historicoTransferencias.get(1);
         assertEquals(2L, segundaTransferencia.getId());
         assertEquals(DESTINO_ID, segundaTransferencia.getContaOrigem());
         assertEquals(ORIGEM_ID, segundaTransferencia.getContaDestino());
